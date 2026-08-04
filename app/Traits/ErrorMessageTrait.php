@@ -1,0 +1,39 @@
+<?php
+
+namespace App\Traits;
+
+use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
+use Throwable;
+
+trait ErrorMessageTrait
+{    
+    /**
+     * Error response
+     *
+     * @param  Throwable | Exception | null $error
+     * @param  int $code
+     * @return JsonResponse
+     */
+    public function errorResponse(Throwable | Exception | null $error = null , int $code = 500) : JsonResponse
+    {
+        if($error->getMessage()){
+            $this->logEntry($error->getMessage(),['code' => $code , 'error' => $error->getTrace()]);
+            return response()->json("Error found in: {$error->getMessage()}",$code);
+        }
+
+        return response()->json("Error found. Plase contact your admin for further assistance.",$code);
+    }    
+    /**
+     * Logs
+     *
+     * @param  string $message
+     * @param   array | null $context
+     * @return void
+     */
+    protected function logEntry(string $message , ?array $context = null) : void
+    {
+        Log::alert($message,$context ?? []);
+    }
+}
