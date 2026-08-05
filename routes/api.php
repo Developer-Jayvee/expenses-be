@@ -15,6 +15,8 @@ Route::post('login',[AuthController::class,'login'])->name('auth.login');
 
 Route::middleware(["auth.cookie"])->group(function() { 
     
+    Route::post('logout',[AuthController::class,'logout'])->name('auth.logout');
+
     Route::apiResource('bills',BillsController::class);
     Route::get('auth-check', function (){
         return response()->json(['message' => 'Authenticated']);
