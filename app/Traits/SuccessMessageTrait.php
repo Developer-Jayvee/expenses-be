@@ -3,20 +3,19 @@
 namespace App\Traits;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 trait SuccessMessageTrait
-{    
+{
     use UtilitiesTrait;
+
     /**
      * Success Response
      *
-     * @param  string $message
-     * @param  array | string | int | null $data
-     * @param  int $code
-     * @return JsonResponse
+     * @param  mixed
      */
-    public function successMessage(string $message = 'Success' , array | string | int | null $data = null , int $code = 200) : JsonResponse
+    public function successMessage(string $message = 'Success', mixed $data = null, int $code = 200): JsonResponse
     {
-        return response()->json($this->setReturnResponse($data,$message),$code);
+        return response()->json($this->setReturnResponse($data, $message), $code);
     }
 }

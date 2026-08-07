@@ -66,7 +66,7 @@ abstract class BaseCrudController
         return $this->baseModel->query();
     }
 
-    private function getQueryFind()
+    protected function getQueryFind()
     {
         self::checkModelInstance();
         return $this->getQueryInstance()->findOrFail($this->baseModelId);
@@ -77,11 +77,14 @@ abstract class BaseCrudController
             self::checkModelInstance();
             $data =  $this->baseModel->query()->get();
             if($this->resource) {
-                return $this->resource::collection($data);
+                return $this->successMessage("Data fetched",
+                    $this->resource::collection($data)
+                );
             }
             return $this->successMessage("Data feched", $data->toArray());
         } catch (\Throwable $th) {
-            return $this->errorResponse($th, $th->getCode());
+            dd($th);
+            return $this->errorResponse($th);
         }
     }
     public function storeQuery() : JsonResponse
@@ -110,10 +113,9 @@ abstract class BaseCrudController
                 throw new BadRequestHttpException("Missing instance id.");
             }
             self::checkModelInstance();
+            $data = $this->baseModel->query()->findOrFail($this->baseModelId); 
 
-            return $this->successMessage($this->okMessage,[
-                'response' => $this->baseModel->query()->find($this->baseModelId)
-            ]);
+            return $this->successMessage($this->okMessage,$data);
         } catch (\Throwable $th) {
             return $this->errorResponse($th,$th->getCode());
         }
