@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\BillCategoryEnum;
 use App\Enums\BillStatusEnum;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -26,10 +27,15 @@ class StoreBillsRequest extends FormRequest
     {
         return [
             'name' => ['required'],
-            'amount' => ['required','numeric'],
-            'billing_date' => ['required','date'],
-            'end_date' => ['required','date'],
-            'status' => ['required',new Enum(BillStatusEnum::class)]
+            'amount' => ['required','numeric','min_digits:1'],
+            'billing_date' => ['nullable','date'],
+            'end_date' => ['nullable','date'],
+            'status' => ['required',new Enum(BillStatusEnum::class)],
+            
+            'category' => ['required',new Enum(BillCategoryEnum::class)],
+            'is_autopay' => ['boolean','sometimes'],
+            'description' => ['nullable','string'],
+            'frequency' => ['required','in:monthly,yearly,daily,once']
         ];
     }
 }

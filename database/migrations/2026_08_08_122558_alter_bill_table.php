@@ -19,8 +19,12 @@ return new class extends Migration
                 $table->boolean("is_autopay")->default(false);
                 $table->enum("default_payment",PaymentTypesEnum::cases())->nullable();
                 $table->string("description")->nullable();
-                $table->enum("frequency",['monthly','yearly','once'])->nullable();
+                $table->enum("frequency",['monthly','yearly','daily','once'])->nullable();
                 $table->integer("day_of_month")->nullable();
+
+                if(Schema::hasColumn('bills','billing_date')) {
+                    $table->date("billing_date")->nullable()->change();
+                }
             }); 
         }
     }
