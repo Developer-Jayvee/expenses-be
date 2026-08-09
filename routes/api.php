@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BillsController;
+use App\Http\Controllers\OptionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,7 +18,13 @@ Route::middleware(["auth.cookie"])->group(function() {
     
     Route::post('logout',[AuthController::class,'logout'])->name('auth.logout');
 
+
     Route::apiResource('bills',BillsController::class);
+    
+    // Options
+    Route::get("options/{type}",OptionController::class);
+
+    // Authentication checker
     Route::get('auth-check', function (){
         return response()->json(['message' => 'Authenticated']);
     });
