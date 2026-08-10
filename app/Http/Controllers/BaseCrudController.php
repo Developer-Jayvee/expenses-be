@@ -97,8 +97,8 @@ abstract class BaseCrudController
             if (!$input) {
                 throw new InvalidPayloadException("Missing payload", 422);
             }
-
-            $this->baseModel->query()->create($input);
+            $model = new $this->baseModel();
+            $model->create($input);
 
             return $this->successMessage($this->okMessage, $this->baseModel->fresh());
         } catch (\Throwable $th) {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\BillCategoryEnum;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -20,8 +21,13 @@ class BillResource extends JsonResource
             'amount' => $this->amount,
             'billing_date' =>$this->billing_date ? $this->billing_date?->format('Y-m-d') : "", 
             'end_date' =>$this->end_date ? $this->end_date?->format('Y-m-d') : "", 
-            'status' => $this->status
+            'status' => $this->status,
 
+            'category' => $this->category?->label(),
+            'frequeny' => $this->frequency,
+            'is_autopay' => $this->is_autopay,
+            'description' => $this->description,
+            'default_payment' => $this->default_payment?->label() ?? ""
         ];
     }
 }
