@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\BillCategoryEnum;
 use App\Enums\BillStatusEnum;
+use App\Enums\PaymentTypesEnum;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
@@ -29,7 +31,13 @@ class UpdateBillsRequest extends FormRequest
             'amount' => ['sometimes','numeric'],
             'billing_date' => ['sometimes','date'],
             'end_date' => ['sometimes','date'],
-            'status' => ['sometimes',new Enum(BillStatusEnum::class)]
+            'status' => ['sometimes',new Enum(BillStatusEnum::class)],
+
+            'category' => ['required',new Enum(BillCategoryEnum::class)],
+            'is_autopay' => ['boolean','sometimes'],
+            'description' => ['nullable','string'],
+            'frequency' => ['required','in:monthly,yearly,daily,once'],
+            'default_payment' => ['sometimes',new Enum(PaymentTypesEnum::class)]
         ];
     }
 }
