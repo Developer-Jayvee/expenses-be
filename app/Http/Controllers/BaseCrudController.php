@@ -83,7 +83,6 @@ abstract class BaseCrudController
             }
             return $this->successMessage("Data feched", $data->toArray());
         } catch (\Throwable $th) {
-            dd($th);
             return $this->errorResponse($th);
         }
     }
@@ -102,7 +101,6 @@ abstract class BaseCrudController
 
             return $this->successMessage($this->okMessage, $this->baseModel->fresh());
         } catch (\Throwable $th) {
-            dd($th);
             return $this->errorResponse($th, 500);
         }
     }
@@ -158,7 +156,8 @@ abstract class BaseCrudController
             return $this->errorResponse($e,$e->getCode());
         }
     }
-    public function destroyQuery() : JsonResponse {
+    public function destroyQuery() : JsonResponse 
+    {
         try {
             $this->getQueryFind()->delete();
 

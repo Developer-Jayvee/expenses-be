@@ -18,8 +18,11 @@ Route::middleware(["auth.cookie"])->group(function() {
     
     Route::post('logout',[AuthController::class,'logout'])->name('auth.logout');
 
+    Route::patch('bills/{id}/update',[BillsController::class, 'update']);
+    Route::get('bills/{id}/details',[BillsController::class, 'show']);
+    Route::delete('bills/{id}/delete',[BillsController::class, 'destroy']);
 
-    Route::apiResource('bills',BillsController::class);
+    Route::apiResource('bills',BillsController::class)->only(['index','store']);
     
     // Options
     Route::get("options/{type}",OptionController::class);

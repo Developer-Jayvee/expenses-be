@@ -9,6 +9,7 @@ use Throwable;
 
 trait ErrorMessageTrait
 {    
+    use LoggerTrait;
     /**
      * Error response
      *
