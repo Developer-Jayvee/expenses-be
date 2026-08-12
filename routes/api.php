@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BillsController;
 use App\Http\Controllers\OptionController;
+use App\Http\Controllers\TransactionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -15,15 +16,21 @@ Route::get('/user', function (Request $request) {
 Route::post('login',[AuthController::class,'login'])->name('auth.login');
 
 Route::middleware(["auth.cookie"])->group(function() { 
-    
     Route::post('logout',[AuthController::class,'logout'])->name('auth.logout');
 
-    Route::patch('bills/{id}/update',[BillsController::class, 'update']);
-    Route::get('bills/{id}/details',[BillsController::class, 'show']);
-    Route::delete('bills/{id}/delete',[BillsController::class, 'destroy']);
-
+    // Bills
+    Route::prefix('bills')->group(function () {
+        Route::patch('{id}/update',[BillsController::class, 'update']);
+        Route::get('{id}/details',[BillsController::class, 'show']);
+        Route::delete('{id}/delete',[BillsController::class, 'destroy']);
+    });
     Route::apiResource('bills',BillsController::class)->only(['index','store']);
-    
+
+    // Transaction
+    Route::prefix('transaction')->group(function () {
+        Route::post('create',[TransactionController::class,'createTransaction']);
+    });
+
     // Options
     Route::get("options/{type}",OptionController::class);
 

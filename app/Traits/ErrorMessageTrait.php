@@ -9,7 +9,7 @@ use Throwable;
 
 trait ErrorMessageTrait
 {    
-    use LoggerTrait;
+    use LoggerTrait, UtilitiesTrait;
     /**
      * Error response
      *
@@ -20,8 +20,12 @@ trait ErrorMessageTrait
     public function errorResponse(Throwable | Exception | null $error = null , int $code = 500) : JsonResponse
     {
         if($error->getMessage()){
-            $this->logEntry($error->getMessage(),['code' => $code , 'error' => $error->getTrace()]);
-            return response()->json("Error found in: {$error->getMessage()}",$code);
+            $this->logEntry($error->getMessage(),['code' => $error->getCode() ?? $code , 'error' => $error->getTrace()]);
+            return response()->json(
+                $this->setReturnResponse([
+                    'trace' => $error->getTrace()
+                ],$error->getMessage(),false)
+            );
         }
 
         return response()->json("Error found. Plase contact your admin for further assistance.",$code);
