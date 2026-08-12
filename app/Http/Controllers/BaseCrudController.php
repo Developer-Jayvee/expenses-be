@@ -21,6 +21,7 @@ abstract class BaseCrudController
 
     protected Model $baseModel;
 
+    protected mixed $service;
     protected string $storeRequest;
     protected string $updateRequest;
 

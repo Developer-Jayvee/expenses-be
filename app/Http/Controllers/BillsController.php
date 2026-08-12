@@ -6,6 +6,7 @@ use App\Http\Requests\StoreBillsRequest;
 use App\Http\Requests\UpdateBillsRequest;
 use App\Http\Resources\BillResource;
 use App\Models\BillsModel;
+use App\Services\BillService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Override;
@@ -15,6 +16,7 @@ class BillsController extends BaseCrudController
     #[Override]
     public function setupParams()
     {
+        $this->service = new BillService;
         $this->baseModel = new BillsModel();
         $this->resource = BillResource::class;  
     }
@@ -37,5 +39,14 @@ class BillsController extends BaseCrudController
     {
         $this->baseModelId = $id;
         return parent::destroyQuery();
+    }
+    
+    public function getNextBill(BillsModel $bill)
+    {
+        try {
+            return $this->billService->getNextBill($bill);
+        } catch (\Exception $err) {
+            return $this->errorResponse($err);
+        }
     }
 }

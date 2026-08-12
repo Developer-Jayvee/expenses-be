@@ -23,6 +23,8 @@ Route::middleware(["auth.cookie"])->group(function() {
         Route::patch('{id}/update',[BillsController::class, 'update']);
         Route::get('{id}/details',[BillsController::class, 'show']);
         Route::delete('{id}/delete',[BillsController::class, 'destroy']);
+        Route::get('{bill}/nextBill',[BillsController::class, 'getNextBill']);
+
     });
     Route::apiResource('bills',BillsController::class)->only(['index','store']);
 
