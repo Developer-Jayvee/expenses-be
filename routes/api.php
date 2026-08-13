@@ -30,6 +30,7 @@ Route::middleware(["auth.cookie"])->group(function() {
 
     // Transaction
     Route::prefix('transaction')->group(function () {
+        Route::get('{bill}/list',[TransactionController::class, 'index']);
         Route::post('create',[TransactionController::class,'createTransaction']);
     });
 

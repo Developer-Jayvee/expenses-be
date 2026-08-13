@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if(Schema::hasTable('transactions')) {
+        if (! Schema::hasColumn('transactions', 'user_id')) {
             Schema::table('transactions', function (Blueprint $table) {
-                $table->integer("coverage_count")->default(1);
+                $table->foreignId('user_id')->after("bills_id")->constrained();
             });
         }
     }
@@ -23,8 +23,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if(Schema::hasColumn('transactions','coverage_count')) {
-            Schema::dropColumns('transactions',['coverage_count']);
+        if (Schema::hasColumn('transactions', 'user_id')) {
+            Schema::dropColumns('transactions', ['user_id']);
         }
     }
 };

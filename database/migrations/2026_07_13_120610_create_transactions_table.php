@@ -19,6 +19,8 @@ return new class extends Migration
             $table->double("amount");
             $table->integer("order")->unique();
             $table->timestamps();
+            $table->softDeletes();
+
         });
     }
 

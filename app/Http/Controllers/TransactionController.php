@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTransactionRequest;
+use App\Models\BillsModel;
 use App\Services\TransactionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class TransactionController extends Controller
 {
@@ -13,6 +15,17 @@ class TransactionController extends Controller
         protected TransactionService $transactionService
     ) {}
         
+    public function index(BillsModel $bill): JsonResponse
+    {
+        try {
+            if(!$bill) {
+                throw new ValidationException("Invalid bill ID", 500);
+            }
+            return $this->transactionService->transactionList($bill->id);
+        } catch (\Exception $err) {
+            return $this->errorResponse($err);
+        }
+    }
     /**
      * Create Transaction
      *

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Http\Resources\TransactionResource;
 use App\Models\BillsModel;
 use App\Models\TransactionsModel;
 use Carbon\Carbon;
@@ -10,7 +11,22 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class TransactionService extends BaseCrudService
-{
+{    
+    /**
+     * Transaction list for specific bill
+     *
+     * @param int $billId [explicite description]
+     *
+     * @return JsonResponse
+     */
+    public function transactionList(int $billId): JsonResponse
+    {
+        return $this->successMessage("Successfully fetched list.",
+            TransactionResource::collection(
+                TransactionsModel::transactions($billId)->get()
+            )
+        );
+    }
     /**
      * Create Transaction
      *

@@ -44,7 +44,7 @@ class BillsController extends BaseCrudController
     public function getNextBill(BillsModel $bill)
     {
         try {
-            return $this->billService->getNextBill($bill);
+            return $this->service->getNextBill($bill);
         } catch (\Exception $err) {
             return $this->errorResponse($err);
         }
