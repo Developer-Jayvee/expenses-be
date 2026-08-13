@@ -116,7 +116,7 @@ abstract class BaseCrudController
 
             return $this->successMessage($this->okMessage,$data);
         } catch (\Throwable $th) {
-            return $this->errorResponse($th,$th->getCode());
+            return $this->errorResponse($th);
         }
     }
     public function updateQuery(FormRequest $request , int $id) : JsonResponse 
@@ -136,7 +136,7 @@ abstract class BaseCrudController
                 'response' => $query
             ]);
         } catch (\Throwable $th) {
-            return $this->errorResponse($th,$th->getCode());
+            return $this->errorResponse($th);
         }
     }
     public function updateQueryByData(array $data , int $id): JsonResponse 
@@ -165,7 +165,7 @@ abstract class BaseCrudController
             $response = $this->setReturnResponse([],$this->okMessage);
             return $this->successMessage($this->okMessage,$response);
         } catch (\Throwable $th) {
-            return $this->errorResponse($th,$th->getCode());
+            return $this->errorResponse($th);
         }
     }
 }
