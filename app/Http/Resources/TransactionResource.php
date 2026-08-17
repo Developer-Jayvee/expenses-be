@@ -15,18 +15,19 @@ class TransactionResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'id' => $this->id,
             'bills_id' => $this->bills_id,
             'user_id' => $this?->user_id,
             'user' => $this->user,
             'payment_mode' => [
                 'value' => $this->payment_mode->value,
-                'label' => $this->payment_mode?->label()
+                'label' => $this->payment_mode?->label(),
             ],
-            'amount' => $this->amount ? number_format($this->amount,2) : 0,
-            'change' => $this->change ? number_format($this->change,2) : 0,
+            'amount' => $this->amount ? number_format($this->amount, 2) : 0,
+            'change' => $this->change ? number_format($this->change, 2) : 0,
             'order' => $this->order,
             'notes' => $this->notes,
-            'transaction_date' => $this->transaction_date?->format('Y-m-d')
+            'transaction_date' => $this->transaction_date?->format('Y-m-d'),
         ];
     }
 }

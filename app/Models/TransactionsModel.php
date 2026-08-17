@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Enums\PaymentTypesEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 use Override;
@@ -14,7 +13,7 @@ class TransactionsModel extends Model
 {
     use SoftDeletes;
 
-    protected $table = "transactions";
+    protected $table = 'transactions';
 
     protected $fillable = [
         'bills_id',
@@ -24,12 +23,12 @@ class TransactionsModel extends Model
         'change',
         'order',
         'notes',
-        'transaction_date'
+        'transaction_date',
     ];
 
     protected $casts = [
         'transaction_date' => 'date',
-        'payment_mode' => PaymentTypesEnum::class
+        'payment_mode' => PaymentTypesEnum::class,
     ];
 
     #[Override]
@@ -44,15 +43,22 @@ class TransactionsModel extends Model
     {
         return $this->belongsTo(BillsModel::class, 'bills_id');
     }
-    public function user(): BelongsTo 
+
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class,'user_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
+
     public function scopeTransactions($query, int $billId)
     {
         return $query->where([
             ['bills_id', $billId],
-            ['user_id',Auth::user()->id]    
+            ['user_id', Auth::user()->id],
         ]);
+    }
+
+    public function scopeOwnedByUser($query)
+    {
+        return $query->where('user_id', Auth::user()->id);
     }
 }

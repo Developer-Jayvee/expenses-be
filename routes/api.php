@@ -11,34 +11,33 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+Route::post('login', [AuthController::class, 'login'])->name('auth.login');
 
-
-Route::post('login',[AuthController::class,'login'])->name('auth.login');
-
-Route::middleware(["auth.cookie"])->group(function() { 
-    Route::post('logout',[AuthController::class,'logout'])->name('auth.logout');
+Route::middleware(['auth.cookie'])->group(function () {
+    Route::post('logout', [AuthController::class, 'logout'])->name('auth.logout');
 
     // Bills
     Route::prefix('bills')->group(function () {
-        Route::patch('{id}/update',[BillsController::class, 'update']);
-        Route::get('{id}/details',[BillsController::class, 'show']);
-        Route::delete('{id}/delete',[BillsController::class, 'destroy']);
-        Route::get('{bill}/nextBill',[BillsController::class, 'getNextBill']);
+        Route::patch('{id}/update', [BillsController::class, 'update']);
+        Route::get('{id}/details', [BillsController::class, 'show']);
+        Route::delete('{id}/delete', [BillsController::class, 'destroy']);
+        Route::get('{bill}/nextBill', [BillsController::class, 'getNextBill']);
 
     });
-    Route::apiResource('bills',BillsController::class)->only(['index','store']);
+    Route::apiResource('bills', BillsController::class)->only(['index', 'store']);
 
     // Transaction
     Route::prefix('transaction')->group(function () {
-        Route::get('{bill}/list',[TransactionController::class, 'index']);
-        Route::post('create',[TransactionController::class,'createTransaction']);
+        Route::get('{bill}/list', [TransactionController::class, 'index']);
+        Route::post('create', [TransactionController::class, 'createTransaction']);
+        Route::delete('{id}/delete', [TransactionController::class, 'destroy']);
     });
 
     // Options
-    Route::get("options/{type}",OptionController::class);
+    Route::get('options/{type}', OptionController::class);
 
     // Authentication checker
-    Route::get('auth-check', function (){
+    Route::get('auth-check', function () {
         return response()->json(['message' => 'Authenticated']);
     });
 });

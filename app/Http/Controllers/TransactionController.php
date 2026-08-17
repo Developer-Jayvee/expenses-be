@@ -6,7 +6,6 @@ use App\Http\Requests\StoreTransactionRequest;
 use App\Models\BillsModel;
 use App\Services\TransactionService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class TransactionController extends Controller
@@ -14,39 +13,48 @@ class TransactionController extends Controller
     public function __construct(
         protected TransactionService $transactionService
     ) {}
-        
+
     public function index(BillsModel $bill): JsonResponse
     {
         try {
-            if(!$bill) {
-                throw new ValidationException("Invalid bill ID", 500);
+            if (! $bill) {
+                throw new ValidationException('Invalid bill ID', 500);
             }
+
             return $this->transactionService->transactionList($bill->id);
         } catch (\Exception $err) {
             return $this->errorResponse($err);
         }
     }
+
     /**
      * Create Transaction
      *
-     * @param StoreTransactionRequest $request [explicite description]
-     *
-     * @return JsonResponse
+     * @param  StoreTransactionRequest  $request  [explicite description]
      */
     public function createTransaction(StoreTransactionRequest $request): JsonResponse
     {
         try {
             return $this->transactionService->createTransaction(
-                $request->validated("billsId"),
+                $request->validated('billsId'),
                 [
                     'transaction_date' => $request->validated('transaction_date'),
                     'notes' => $request->validated('notes'),
                     'payment_mode' => $request->validated('payment_mode'),
-                    'amount' => $request->validated('amount')
+                    'amount' => $request->validated('amount'),
                 ]
             );
         } catch (\Exception $ex) {
             return $this->errorResponse($ex);
+        }
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        try {
+            return $this->transactionService->deleteTransaction($id);
+        } catch (\Exception $err) {
+            return $this->errorResponse($err);
         }
     }
 }

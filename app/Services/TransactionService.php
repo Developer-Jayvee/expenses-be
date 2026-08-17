@@ -8,25 +8,23 @@ use App\Models\TransactionsModel;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 
 class TransactionService extends BaseCrudService
-{    
+{
     /**
      * Transaction list for specific bill
      *
-     * @param int $billId [explicite description]
-     *
-     * @return JsonResponse
+     * @param  int  $billId  [explicite description]
      */
     public function transactionList(int $billId): JsonResponse
     {
-        return $this->successMessage("Successfully fetched list.",
+        return $this->successMessage('Successfully fetched list.',
             TransactionResource::collection(
                 TransactionsModel::transactions($billId)->get()
             )
         );
     }
+
     /**
      * Create Transaction
      *
@@ -59,10 +57,10 @@ class TransactionService extends BaseCrudService
             DB::beginTransaction();
 
             $change = abs((float) $bills->amount - $data['amount']);
-            $count = self::countTransaction($bills->id) + 1;
+            $nextOrder = self::nextOrder($bills->id);
 
             $transaction = TransactionsModel::query()->create([
-                'order' => $count,
+                'order' => $nextOrder,
                 'bills_id' => $bills->id,
                 'notes' => $data['notes'],
                 'payment_mode' => $data['payment_mode'],
@@ -81,12 +79,29 @@ class TransactionService extends BaseCrudService
     }
 
     /**
-     * Transaction count per expenses
+     * Soft delete a logged payment belonging to the current user.
+     *
+     * @param  int  $id  [explicite description]
+     */
+    public function deleteTransaction(int $id): JsonResponse
+    {
+        $transaction = TransactionsModel::ownedByUser()->findOrFail($id);
+
+        $transaction->delete();
+
+        return $this->successMessage('Successfully deleted', []);
+    }
+
+    /**
+     * Next `order` value for a bill's transactions.
+     *
+     * Includes soft-deleted rows so a re-used `order` never collides with
+     * the unique (bills_id, order) index once a payment has been deleted.
      *
      * @param  int  $billId  [explicite description]
      */
-    private static function countTransaction(int $billId): int
+    private static function nextOrder(int $billId): int
     {
-        return TransactionsModel::transactions($billId)->count();
+        return (int) TransactionsModel::withTrashed()->transactions($billId)->max('order') + 1;
     }
 }
