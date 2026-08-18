@@ -48,6 +48,14 @@ class BillService extends BaseCrudService
     }
 
     /**
+     * Fields still editable once a bill has logged payments. Billing and
+     * payment-settings fields are locked at that point since changing them
+     * would retroactively rewrite the history the logged payments were
+     * recorded against.
+     */
+    private const EDITABLE_FIELDS_AFTER_PAYMENT = ['name', 'category', 'description'];
+
+    /**
      * Update a bill and record the change in its activity feed.
      *
      * @param  int  $id  [explicite description]
@@ -58,6 +66,11 @@ class BillService extends BaseCrudService
         DB::beginTransaction();
         try {
             $bill = BillsModel::query()->findOrFail($id);
+
+            if (TransactionsModel::transactions($id)->exists()) {
+                $data = array_intersect_key($data, array_flip(self::EDITABLE_FIELDS_AFTER_PAYMENT));
+            }
+
             $bill->update($data);
 
             $this->activityLogger->log(

@@ -112,7 +112,11 @@ abstract class BaseCrudController
                 throw new BadRequestHttpException("Missing instance id.");
             }
             self::checkModelInstance();
-            $data = $this->baseModel->query()->findOrFail($this->baseModelId); 
+            $data = $this->baseModel->query()->findOrFail($this->baseModelId);
+
+            if ($this->resource) {
+                return $this->successMessage($this->okMessage, new $this->resource($data));
+            }
 
             return $this->successMessage($this->okMessage,$data);
         } catch (\Throwable $th) {
