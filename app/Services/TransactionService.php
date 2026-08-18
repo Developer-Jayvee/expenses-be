@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Contracts\ActivityLoggerInterface;
+use App\Enums\ActivityTypeEnum;
+use App\Enums\BillStatusEnum;
 use App\Http\Resources\TransactionResource;
 use App\Models\BillsModel;
 use App\Models\TransactionsModel;
@@ -16,6 +19,10 @@ class TransactionService extends BaseCrudService
     private const DEFAULT_SORT_BY = 'transaction_date';
 
     private const DEFAULT_SORT_DIR = 'desc';
+
+    public function __construct(
+        private readonly ActivityLoggerInterface $activityLogger
+    ) {}
 
     /**
      * Transaction list for specific bill, length-aware paginated.
@@ -92,6 +99,9 @@ class TransactionService extends BaseCrudService
             if (! $bills) {
                 throw new \Exception('Invalid bill id', 403);
             }
+            if ($bills->status === BillStatusEnum::COMPLETED) {
+                throw new \Exception('This bill has already been fully paid.', 403);
+            }
             if ($bills->amount > $data['amount']) {
                 throw new \Exception('Invalid amount.', 403);
             }
@@ -106,6 +116,7 @@ class TransactionService extends BaseCrudService
 
             $change = abs((float) $bills->amount - $data['amount']);
             $nextOrder = self::nextOrder($bills->id);
+            $paymentsCount = TransactionsModel::transactions($bills->id)->count() + 1;
 
             $transaction = TransactionsModel::query()->create([
                 'order' => $nextOrder,
@@ -116,6 +127,17 @@ class TransactionService extends BaseCrudService
                 'amount' => $data['amount'],
                 'change' => $change ?? 0,
             ]);
+
+            if ($bills->status !== BillStatusEnum::INACTIVE) {
+                $bills->status = BillService::resolveStatus($bills, $paymentsCount);
+                $bills->save();
+            }
+
+            $this->activityLogger->log(
+                $bills,
+                ActivityTypeEnum::PAYMENT_LOGGED,
+                'Payment of '.number_format((float) $data['amount'], 2).' logged.'
+            );
 
             DB::commit();
 
@@ -134,8 +156,23 @@ class TransactionService extends BaseCrudService
     public function deleteTransaction(int $id): JsonResponse
     {
         $transaction = TransactionsModel::ownedByUser()->findOrFail($id);
+        $bills = BillsModel::find($transaction->bills_id);
 
         $transaction->delete();
+
+        if ($bills && $bills->status !== BillStatusEnum::INACTIVE) {
+            $paymentsCount = TransactionsModel::transactions($bills->id)->count();
+            $bills->status = BillService::resolveStatus($bills, $paymentsCount);
+            $bills->save();
+        }
+
+        if ($bills) {
+            $this->activityLogger->log(
+                $bills,
+                ActivityTypeEnum::PAYMENT_DELETED,
+                'Payment of '.number_format((float) $transaction->amount, 2).' deleted.'
+            );
+        }
 
         return $this->successMessage('Successfully deleted', []);
     }

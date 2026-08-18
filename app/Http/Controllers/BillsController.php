@@ -8,43 +8,61 @@ use App\Http\Resources\BillResource;
 use App\Models\BillsModel;
 use App\Services\BillService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Override;
 
 class BillsController extends BaseCrudController
 {
+    public function __construct(
+        protected BillService $billService
+    ) {
+        parent::__construct();
+    }
+
     #[Override]
     public function setupParams()
     {
-        $this->service = new BillService;
-        $this->baseModel = new BillsModel();
-        $this->resource = BillResource::class;  
+        $this->baseModel = new BillsModel;
+        $this->resource = BillResource::class;
     }
-    public function store(StoreBillsRequest $request) : JsonResponse
+
+    public function store(StoreBillsRequest $request): JsonResponse
     {
-        $this->storeRequest = $request::class;
-        return parent::storeQuery();
+        try {
+            return $this->billService->createBill($request->validated());
+        } catch (\Throwable $th) {
+            return $this->errorResponse($th);
+        }
     }
-    public function update(UpdateBillsRequest $request , int $id) : JsonResponse
+
+    public function update(UpdateBillsRequest $request, int $id): JsonResponse
     {
-        $this->updateRequest = $request::class;
-        return parent::updateQuery($request,$id);
+        try {
+            return $this->billService->updateBill($id, $request->validated());
+        } catch (\Throwable $th) {
+            return $this->errorResponse($th);
+        }
     }
-    public function show(int $id) : JsonResponse
+
+    public function show(int $id): JsonResponse
     {
         $this->baseModelId = $id;
+
         return parent::showQuery();
     }
-    public function destroy(int $id) : JsonResponse
+
+    public function destroy(int $id): JsonResponse
     {
-        $this->baseModelId = $id;
-        return parent::destroyQuery();
+        try {
+            return $this->billService->deleteBill($id);
+        } catch (\Throwable $th) {
+            return $this->errorResponse($th);
+        }
     }
-    
+
     public function getNextBill(BillsModel $bill)
     {
         try {
-            return $this->service->getNextBill($bill);
+            return $this->billService->getNextBill($bill);
         } catch (\Exception $err) {
             return $this->errorResponse($err);
         }

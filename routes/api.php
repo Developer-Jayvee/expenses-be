@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BillsController;
 use App\Http\Controllers\OptionController;
@@ -22,6 +23,7 @@ Route::middleware(['auth.cookie'])->group(function () {
         Route::get('{id}/details', [BillsController::class, 'show']);
         Route::delete('{id}/delete', [BillsController::class, 'destroy']);
         Route::get('{bill}/nextBill', [BillsController::class, 'getNextBill']);
+        Route::get('{bill}/activities', [ActivityController::class, 'index']);
 
     });
     Route::apiResource('bills', BillsController::class)->only(['index', 'store']);

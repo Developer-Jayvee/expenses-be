@@ -2,9 +2,10 @@
 
 namespace App\Enums;
 
-enum BillStatusEnum : string
+enum BillStatusEnum: string
 {
-    case ACTIVE = "active";
-    case INACTIVE = "inactive";
-    case COMPLETED = "completed";
+    case ACTIVE = 'active';
+    case ONGOING = 'ongoing';
+    case INACTIVE = 'inactive';
+    case COMPLETED = 'completed';
 }

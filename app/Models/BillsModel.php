@@ -61,4 +61,9 @@ class BillsModel extends Model
     {
         return $this->hasMany(TransactionsModel::class, 'id', 'bills_id');
     }
+
+    public function activities(): HasMany
+    {
+        return $this->hasMany(ActivityModel::class, 'bills_id')->latest('id');
+    }
 }
