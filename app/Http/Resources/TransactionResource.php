@@ -28,6 +28,7 @@ class TransactionResource extends JsonResource
             'order' => $this->order,
             'notes' => $this->notes,
             'transaction_date' => $this->transaction_date?->format('Y-m-d'),
+            'created_at' => $this->created_at?->toISOString(),
         ];
     }
 }

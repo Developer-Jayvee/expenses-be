@@ -11,18 +11,66 @@ use Illuminate\Support\Facades\DB;
 
 class TransactionService extends BaseCrudService
 {
+    private const DEFAULT_PER_PAGE = 5;
+
+    private const DEFAULT_SORT_BY = 'transaction_date';
+
+    private const DEFAULT_SORT_DIR = 'desc';
+
     /**
-     * Transaction list for specific bill
+     * Transaction list for specific bill, length-aware paginated.
+     *
+     * @param  int  $billId  [explicite description]
+     * @param array{
+     *     page?: int,
+     *     per_page?: int,
+     *     sort_by?: string,
+     *     sort_dir?: string
+     * } $params
+     */
+    public function transactionList(int $billId, array $params = []): JsonResponse
+    {
+        $sortBy = $params['sort_by'] ?? self::DEFAULT_SORT_BY;
+        $sortDir = $params['sort_dir'] ?? self::DEFAULT_SORT_DIR;
+        $perPage = $params['per_page'] ?? self::DEFAULT_PER_PAGE;
+
+        $paginator = TransactionsModel::transactions($billId)
+            ->orderBy($sortBy, $sortDir)
+            ->paginate($perPage, ['*'], 'page', $params['page'] ?? 1);
+
+        return $this->successMessage('Successfully fetched list.', [
+            'items' => TransactionResource::collection($paginator->items()),
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'per_page' => $paginator->perPage(),
+                'last_page' => $paginator->lastPage(),
+                'total' => $paginator->total(),
+            ],
+            'summary' => $this->transactionSummary($billId),
+        ]);
+    }
+
+    /**
+     * Aggregate totals across all of a bill's transactions, independent of
+     * the current page, for KPI display.
      *
      * @param  int  $billId  [explicite description]
      */
-    public function transactionList(int $billId): JsonResponse
+    private function transactionSummary(int $billId): array
     {
-        return $this->successMessage('Successfully fetched list.',
-            TransactionResource::collection(
-                TransactionsModel::transactions($billId)->get()
-            )
-        );
+        $totals = TransactionsModel::transactions($billId)
+            ->selectRaw('COALESCE(SUM(amount), 0) as total_paid, COUNT(*) as payments_count')
+            ->first();
+
+        $lastPayment = TransactionsModel::transactions($billId)
+            ->orderByDesc('transaction_date')
+            ->first();
+
+        return [
+            'total_paid' => (float) $totals->total_paid,
+            'payments_count' => (int) $totals->payments_count,
+            'last_payment' => $lastPayment ? new TransactionResource($lastPayment) : null,
+        ];
     }
 
     /**

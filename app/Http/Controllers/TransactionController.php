@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ListTransactionRequest;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Models\BillsModel;
 use App\Services\TransactionService;
@@ -14,14 +15,14 @@ class TransactionController extends Controller
         protected TransactionService $transactionService
     ) {}
 
-    public function index(BillsModel $bill): JsonResponse
+    public function index(BillsModel $bill, ListTransactionRequest $request): JsonResponse
     {
         try {
             if (! $bill) {
                 throw new ValidationException('Invalid bill ID', 500);
             }
 
-            return $this->transactionService->transactionList($bill->id);
+            return $this->transactionService->transactionList($bill->id, $request->validated());
         } catch (\Exception $err) {
             return $this->errorResponse($err);
         }
