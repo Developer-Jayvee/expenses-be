@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BillsController;
 use App\Http\Controllers\DailyBudgetsController;
 use App\Http\Controllers\DailyExpensesController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OptionController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Http\Request;
@@ -48,6 +49,9 @@ Route::middleware(['auth.cookie'])->group(function () {
         Route::post('{budget}/expenses', [DailyExpensesController::class, 'store']);
         Route::delete('expenses/{id}/delete', [DailyExpensesController::class, 'destroy']);
     });
+
+    // Dashboard
+    Route::get('dashboard/summary', [DashboardController::class, 'summary']);
 
     // Options
     Route::get('options/{type}', OptionController::class);
