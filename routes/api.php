@@ -3,6 +3,8 @@
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BillsController;
+use App\Http\Controllers\DailyBudgetsController;
+use App\Http\Controllers\DailyExpensesController;
 use App\Http\Controllers\OptionController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Http\Request;
@@ -33,6 +35,18 @@ Route::middleware(['auth.cookie'])->group(function () {
         Route::get('{bill}/list', [TransactionController::class, 'index']);
         Route::post('create', [TransactionController::class, 'createTransaction']);
         Route::delete('{id}/delete', [TransactionController::class, 'destroy']);
+    });
+
+    // Daily Expenses
+    Route::prefix('daily-budgets')->group(function () {
+        Route::get('/', [DailyBudgetsController::class, 'index']);
+        Route::post('/', [DailyBudgetsController::class, 'store']);
+        Route::get('active', [DailyBudgetsController::class, 'active']); // before {id}
+        Route::get('{id}/details', [DailyBudgetsController::class, 'show']);
+        Route::patch('{id}/done', [DailyBudgetsController::class, 'done']);
+        Route::patch('{id}/cancel', [DailyBudgetsController::class, 'cancel']);
+        Route::post('{budget}/expenses', [DailyExpensesController::class, 'store']);
+        Route::delete('expenses/{id}/delete', [DailyExpensesController::class, 'destroy']);
     });
 
     // Options
