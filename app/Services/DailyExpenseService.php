@@ -25,7 +25,7 @@ class DailyExpenseService extends BaseCrudService
      */
     public function addExpense(int $budgetId, array $data): JsonResponse
     {
-        $budget = DailyBudgetsModel::ownedByUser()->findOrFail($budgetId);
+        $budget = DailyBudgetsModel::query()->findOrFail($budgetId);
 
         if ($budget->status !== DailyBudgetStatusEnum::ACTIVE) {
             throw new \Exception('Expenses can only be logged against an active transaction.', 422);
@@ -50,10 +50,7 @@ class DailyExpenseService extends BaseCrudService
      */
     public function deleteExpense(int $id): JsonResponse
     {
-        $expense = DailyExpensesModel::whereHas(
-            'budget',
-            fn ($query) => $query->ownedByUser()
-        )->findOrFail($id);
+        $expense = DailyExpensesModel::whereHas('budget')->findOrFail($id);
 
         $budget = $expense->budget;
 

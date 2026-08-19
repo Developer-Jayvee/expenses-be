@@ -14,7 +14,7 @@ class DailyBudgetService extends BaseCrudService
      */
     public function getActiveSession(): JsonResponse
     {
-        $budget = DailyBudgetsModel::ownedByUser()
+        $budget = DailyBudgetsModel::query()
             ->where('status', DailyBudgetStatusEnum::ACTIVE)
             ->with('expenses')
             ->first();
@@ -33,7 +33,7 @@ class DailyBudgetService extends BaseCrudService
      */
     public function createSession(array $data): JsonResponse
     {
-        $hasActiveSession = DailyBudgetsModel::ownedByUser()
+        $hasActiveSession = DailyBudgetsModel::query()
             ->where('status', DailyBudgetStatusEnum::ACTIVE)
             ->exists();
 
@@ -59,7 +59,7 @@ class DailyBudgetService extends BaseCrudService
      */
     public function listSessions(array $filters = []): JsonResponse
     {
-        $query = DailyBudgetsModel::ownedByUser();
+        $query = DailyBudgetsModel::query();
 
         if (! empty($filters['name'])) {
             $query->where('name', 'like', '%'.$filters['name'].'%');
@@ -85,7 +85,7 @@ class DailyBudgetService extends BaseCrudService
      */
     public function showSession(int $id): JsonResponse
     {
-        $budget = DailyBudgetsModel::ownedByUser()->with('expenses')->findOrFail($id);
+        $budget = DailyBudgetsModel::query()->with('expenses')->findOrFail($id);
 
         return $this->successMessage('Successfully fetched.', new DailyBudgetResource($budget));
     }
@@ -97,7 +97,7 @@ class DailyBudgetService extends BaseCrudService
      */
     public function markDone(int $id): JsonResponse
     {
-        $budget = DailyBudgetsModel::ownedByUser()->findOrFail($id);
+        $budget = DailyBudgetsModel::query()->findOrFail($id);
 
         if ($budget->status !== DailyBudgetStatusEnum::ACTIVE) {
             throw new \Exception('Only an active transaction can be marked as done.', 422);
@@ -117,7 +117,7 @@ class DailyBudgetService extends BaseCrudService
      */
     public function cancelSession(int $id): JsonResponse
     {
-        $budget = DailyBudgetsModel::ownedByUser()->findOrFail($id);
+        $budget = DailyBudgetsModel::query()->findOrFail($id);
 
         if ($budget->status !== DailyBudgetStatusEnum::ACTIVE) {
             throw new \Exception('Only an active transaction can be cancelled.', 422);

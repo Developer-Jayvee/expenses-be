@@ -7,39 +7,26 @@ use App\Models\BillsModel;
 use App\Models\TransactionsModel;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 
 class DashboardService extends BaseCrudService
 {
-    /**
-     * How long the dashboard aggregate is cached before it is recomputed.
-     */
-    private const CACHE_TTL_SECONDS = 86400;
-
     private const UPCOMING_STATUSES = [BillStatusEnum::ACTIVE, BillStatusEnum::ONGOING];
 
     /**
      * Dashboard summary: monthly expense totals for the current year, bill
-     * totals per category, and bills due this month. Cached for a day since
-     * this is an aggregate read, not something that needs to reflect writes
-     * in real time.
+     * totals per category, and bills due this month. Computed fresh on
+     * every request.
      */
     public function getSummary(): JsonResponse
     {
         $year = (int) now()->year;
-        $userId = Auth::id();
 
-        $summary = Cache::remember(
-            "dashboard.summary.{$userId}.{$year}",
-            self::CACHE_TTL_SECONDS,
-            fn () => [
-                'year' => $year,
-                'monthly_expenses' => $this->monthlyExpenses($year),
-                'bills_by_category' => $this->billsByCategory(),
-                'upcoming_bills' => $this->upcomingBills(),
-            ]
-        );
+        $summary = [
+            'year' => $year,
+            'monthly_expenses' => $this->monthlyExpenses($year),
+            'bills_by_category' => $this->billsByCategory(),
+            'upcoming_bills' => $this->upcomingBills(),
+        ];
 
         return $this->successMessage('Dashboard summary fetched.', $summary);
     }
@@ -52,7 +39,7 @@ class DashboardService extends BaseCrudService
      */
     private function monthlyExpenses(int $year): array
     {
-        $totals = TransactionsModel::ownedByUser()
+        $totals = TransactionsModel::query()
             ->whereYear('transaction_date', $year)
             ->selectRaw('MONTH(transaction_date) as month, SUM(amount) as total')
             ->groupBy('month')

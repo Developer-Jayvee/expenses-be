@@ -55,4 +55,38 @@ class AuthRegisterTest extends TestCase
 
         $response->assertStatus(422);
     }
+
+    public function test_user_can_register_with_valid_invitation_code(): void
+    {
+        $inviter = User::factory()->create(['group_code' => 'ABCDE']);
+
+        $response = $this->postJson('api/register', [
+            'first_name' => 'Jane',
+            'last_name' => 'Doe',
+            'email' => 'jane@example.com',
+            'password' => 'password1',
+            'password_confirmation' => 'password1',
+            'invitation_code' => $inviter->group_code,
+        ]);
+
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('users', [
+            'email' => 'jane@example.com',
+            'group_code' => $inviter->group_code,
+        ]);
+    }
+
+    public function test_register_fails_with_invitation_code_matching_no_group(): void
+    {
+        $response = $this->postJson('api/register', [
+            'first_name' => 'Jane',
+            'last_name' => 'Doe',
+            'email' => 'jane@example.com',
+            'password' => 'password1',
+            'password_confirmation' => 'password1',
+            'invitation_code' => 'ZZZZZ',
+        ]);
+
+        $response->assertStatus(422);
+    }
 }

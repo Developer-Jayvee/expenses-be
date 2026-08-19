@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Contracts\GroupCodeGeneratorInterface;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -28,6 +29,7 @@ class UserFactory extends Factory
             'first_name' => fake()->name(),
             'last_name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
+            'group_code' => app(GroupCodeGeneratorInterface::class)->generate(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),

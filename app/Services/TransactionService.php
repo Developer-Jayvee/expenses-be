@@ -155,7 +155,7 @@ class TransactionService extends BaseCrudService
      */
     public function deleteTransaction(int $id): JsonResponse
     {
-        $transaction = TransactionsModel::ownedByUser()->findOrFail($id);
+        $transaction = TransactionsModel::query()->findOrFail($id);
         $bills = BillsModel::find($transaction->bills_id);
 
         $transaction->delete();

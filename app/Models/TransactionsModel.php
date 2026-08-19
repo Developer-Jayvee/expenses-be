@@ -3,15 +3,14 @@
 namespace App\Models;
 
 use App\Enums\PaymentTypesEnum;
+use App\Models\Concerns\BelongsToGroup;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Auth;
-use Override;
 
 class TransactionsModel extends Model
 {
-    use SoftDeletes;
+    use BelongsToGroup, SoftDeletes;
 
     protected $table = 'transactions';
 
@@ -31,34 +30,13 @@ class TransactionsModel extends Model
         'payment_mode' => PaymentTypesEnum::class,
     ];
 
-    #[Override]
-    public static function booted()
-    {
-        static::creating(function ($transaction) {
-            $transaction->user_id = Auth::user()->id;
-        });
-    }
-
     public function bills(): BelongsTo
     {
         return $this->belongsTo(BillsModel::class, 'bills_id');
     }
 
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
-
     public function scopeTransactions($query, int $billId)
     {
-        return $query->where([
-            ['bills_id', $billId],
-            ['user_id', Auth::user()->id],
-        ]);
-    }
-
-    public function scopeOwnedByUser($query)
-    {
-        return $query->where('user_id', Auth::user()->id);
+        return $query->where('bills_id', $billId);
     }
 }

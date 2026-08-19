@@ -3,17 +3,15 @@
 namespace App\Models;
 
 use App\Enums\DailyBudgetStatusEnum;
+use App\Models\Concerns\BelongsToGroup;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Auth;
-use Override;
 
 class DailyBudgetsModel extends Model
 {
-    use HasFactory;
+    use BelongsToGroup, HasFactory;
 
     protected $table = 'daily_budgets';
 
@@ -34,27 +32,9 @@ class DailyBudgetsModel extends Model
         'remaining_budget',
     ];
 
-    #[Override]
-    public static function booted()
-    {
-        static::creating(function ($budget) {
-            $budget->user_id = Auth::user()->id;
-        });
-    }
-
     public function expenses(): HasMany
     {
         return $this->hasMany(DailyExpensesModel::class, 'daily_budget_id')->latest('id');
-    }
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
-
-    public function scopeOwnedByUser($query)
-    {
-        return $query->where('user_id', Auth::user()->id);
     }
 
     protected function totalSpent(): Attribute

@@ -27,6 +27,7 @@ class RegisterRequest extends BaseFormRequest
             'last_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'max:18', 'regex:/^[A-Za-z0-9]+$/', 'confirmed'],
+            'invitation_code' => ['nullable', 'string', 'size:5', 'exists:users,group_code'],
         ];
     }
 
@@ -44,6 +45,7 @@ class RegisterRequest extends BaseFormRequest
             'password.max' => 'Maximum password allowed is 18',
             'password.regex' => 'Numeric and Letters are allowed.',
             'password.confirmed' => 'Passwords do not match.',
+            'invitation_code.exists' => 'This invitation code does not match any existing group.',
         ];
     }
 }

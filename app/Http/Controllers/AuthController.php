@@ -34,6 +34,7 @@ class AuthController extends Controller
             lastName: $request->validated('last_name'),
             email: $request->validated('email'),
             password: $request->validated('password'),
+            invitationCode: $request->validated('invitation_code'),
         );
     }
 

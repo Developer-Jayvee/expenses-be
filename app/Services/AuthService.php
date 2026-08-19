@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Contracts\GroupCodeGeneratorInterface;
 use App\Models\User;
 use App\Traits\ErrorMessageTrait;
 use App\Traits\SuccessMessageTrait;
@@ -11,6 +12,10 @@ use Illuminate\Http\JsonResponse;
 class AuthService
 {
     use ErrorMessageTrait, SuccessMessageTrait , UtilitiesTrait;
+
+    public function __construct(
+        private readonly GroupCodeGeneratorInterface $groupCodeGenerator
+    ) {}
 
     public function login(string $email, string $password): JsonResponse
     {
@@ -27,14 +32,17 @@ class AuthService
         }
     }
 
-    public function register(string $firstName, string $lastName, string $email, string $password): JsonResponse
+    public function register(string $firstName, string $lastName, string $email, string $password, ?string $invitationCode = null): JsonResponse
     {
         try {
+            $groupCode = $invitationCode ?? $this->groupCodeGenerator->generate();
+
             $user = User::create([
                 'first_name' => $firstName,
                 'last_name' => $lastName,
                 'email' => $email,
                 'password' => $password,
+                'group_code' => $groupCode,
             ]);
 
             return response()->json(

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\BillCategoryEnum;
 use App\Enums\BillStatusEnum;
 use App\Enums\PaymentTypesEnum;
+use App\Models\Concerns\BelongsToGroup;
 use App\Services\BillService;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -15,7 +16,7 @@ use Override;
 
 class BillsModel extends Model
 {
-    use HasFactory;
+    use BelongsToGroup, HasFactory;
 
     protected $table = 'bills';
 
