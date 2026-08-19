@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Enums\BillFrequencyEnum;
 use App\Enums\BillStatusEnum;
 use App\Models\BillsModel;
+use App\Models\DailyBudgetsModel;
 use App\Models\TransactionsModel;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -32,23 +34,30 @@ class DashboardService extends BaseCrudService
     }
 
     /**
-     * Total transaction amount per month (January-December) for the given
-     * year, scoped to the authenticated user.
+     * Total transaction + daily expense amount per month (January-December)
+     * for the given year, scoped to the authenticated user.
      *
      * @return array<int, array{month: int, label: string, total: float}>
      */
     private function monthlyExpenses(int $year): array
     {
-        $totals = TransactionsModel::query()
+        $transactionTotals = TransactionsModel::query()
             ->whereYear('transaction_date', $year)
             ->selectRaw('MONTH(transaction_date) as month, SUM(amount) as total')
+            ->groupBy('month')
+            ->pluck('total', 'month');
+
+        $dailyExpenseTotals = DailyBudgetsModel::query()
+            ->join('daily_expenses', 'daily_expenses.daily_budget_id', '=', 'daily_budgets.id')
+            ->whereYear('daily_budgets.budget_date', $year)
+            ->selectRaw('MONTH(daily_budgets.budget_date) as month, SUM(daily_expenses.amount) as total')
             ->groupBy('month')
             ->pluck('total', 'month');
 
         return collect(range(1, 12))->map(fn (int $month) => [
             'month' => $month,
             'label' => Carbon::create($year, $month, 1)->format('M'),
-            'total' => (float) ($totals[$month] ?? 0),
+            'total' => (float) ($transactionTotals[$month] ?? 0) + (float) ($dailyExpenseTotals[$month] ?? 0),
         ])->values()->all();
     }
 
@@ -74,7 +83,10 @@ class DashboardService extends BaseCrudService
 
     /**
      * Active/ongoing bills whose next due date falls within the current
-     * calendar month, soonest first.
+     * calendar month, soonest first. Bills missing a valid frequency
+     * (legacy data predating that field being required) have no
+     * computable due date and are skipped rather than crashing the
+     * summary.
      *
      * @return array<int, array{id: int, name: string, amount: float, category: string, category_label: string, due_date: string, status: string}>
      */
@@ -85,6 +97,7 @@ class DashboardService extends BaseCrudService
         return BillsModel::query()
             ->whereIn('status', array_map(fn ($status) => $status->value, self::UPCOMING_STATUSES))
             ->get()
+            ->filter(fn (BillsModel $bill) => BillFrequencyEnum::tryFrom($bill->frequency) !== null)
             ->map(fn (BillsModel $bill) => [
                 'bill' => $bill,
                 'due_date' => BillService::billingDate($bill),
