@@ -1,8 +1,9 @@
-# Expenses Backend
+# Coinpath Backend
 
-Laravel 13 (PHP 8.3) JSON API for the Expenses budgeting app. Uses Sanctum
-cookie-based authentication (not bearer tokens) and MySQL. Pair it with the
-`expenses-app/` React frontend for the full application.
+Laravel 13 (PHP 8.3) JSON API for Coinpath — bills, expenses, and where the
+money is heading. Uses Sanctum cookie-based authentication (not bearer
+tokens) and MySQL. Pair it with the `expenses-app/` React frontend for the
+full application.
 
 ## Requirements
 
