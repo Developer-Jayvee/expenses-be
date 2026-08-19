@@ -105,11 +105,15 @@ class TransactionService extends BaseCrudService
             if ($bills->amount > $data['amount']) {
                 throw new \Exception('Invalid amount.', 403);
             }
-            $startingDate = Carbon::parse($bills->billing_date);
+            $dueDate = BillService::billingDate($bills);
             $transactionDate = Carbon::parse($data['transaction_date']);
 
-            if ($transactionDate->lt($startingDate)) {
-                throw new \Exception('Invalid transaction date', 403);
+            if ($transactionDate->lt($dueDate)) {
+                $message = TransactionsModel::transactions($bills->id)->exists()
+                    ? 'You have already logged a payment for the current billing period.'
+                    : 'Invalid transaction date';
+
+                throw new \Exception($message, 403);
             }
 
             DB::beginTransaction();
