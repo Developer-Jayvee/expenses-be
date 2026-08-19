@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\BillFrequencyEnum;
 use App\Enums\BillStatusEnum;
+use App\Enums\DashboardPeriodEnum;
 use App\Models\BillsModel;
 use App\Models\DailyBudgetsModel;
 use App\Models\TransactionsModel;
@@ -34,6 +35,24 @@ class DashboardService extends BaseCrudService
     }
 
     /**
+     * Expense totals for the monthly-expenses chart, bucketed either by
+     * month (current year, January-December) or by week (rolling last 12
+     * ISO weeks ending today).
+     */
+    public function getExpenses(DashboardPeriodEnum $period): JsonResponse
+    {
+        $data = match ($period) {
+            DashboardPeriodEnum::WEEKLY => $this->weeklyExpenses(),
+            DashboardPeriodEnum::MONTHLY => $this->monthlyExpenses((int) now()->year),
+        };
+
+        return $this->successMessage('Dashboard expenses fetched.', [
+            'period' => $period->value,
+            'data' => $data,
+        ]);
+    }
+
+    /**
      * Total transaction + daily expense amount per month (January-December)
      * for the given year, scoped to the authenticated user.
      *
@@ -59,6 +78,41 @@ class DashboardService extends BaseCrudService
             'label' => Carbon::create($year, $month, 1)->format('M'),
             'total' => (float) ($transactionTotals[$month] ?? 0) + (float) ($dailyExpenseTotals[$month] ?? 0),
         ])->values()->all();
+    }
+
+    /**
+     * Total transaction + daily expense amount per ISO week for the last
+     * 12 weeks (rolling, ending with the current week).
+     *
+     * @return array<int, array{label: string, total: float}>
+     */
+    private function weeklyExpenses(): array
+    {
+        $now = now();
+        $rangeStart = $now->copy()->subWeeks(11)->startOfWeek();
+
+        $transactionTotals = TransactionsModel::query()
+            ->where('transaction_date', '>=', $rangeStart)
+            ->selectRaw('YEARWEEK(transaction_date, 3) as yearweek, SUM(amount) as total')
+            ->groupBy('yearweek')
+            ->pluck('total', 'yearweek');
+
+        $dailyExpenseTotals = DailyBudgetsModel::query()
+            ->join('daily_expenses', 'daily_expenses.daily_budget_id', '=', 'daily_budgets.id')
+            ->where('daily_budgets.budget_date', '>=', $rangeStart)
+            ->selectRaw('YEARWEEK(daily_budgets.budget_date, 3) as yearweek, SUM(daily_expenses.amount) as total')
+            ->groupBy('yearweek')
+            ->pluck('total', 'yearweek');
+
+        return collect(range(11, 0))->map(function (int $offset) use ($now, $transactionTotals, $dailyExpenseTotals) {
+            $weekStart = $now->copy()->subWeeks($offset)->startOfWeek();
+            $yearweek = (int) $weekStart->format('oW');
+
+            return [
+                'label' => $weekStart->format('M j'),
+                'total' => (float) ($transactionTotals[$yearweek] ?? 0) + (float) ($dailyExpenseTotals[$yearweek] ?? 0),
+            ];
+        })->values()->all();
     }
 
     /**

@@ -53,6 +53,7 @@ Route::middleware(['auth.cookie'])->group(function () {
 
     // Dashboard
     Route::get('dashboard/summary', [DashboardController::class, 'summary']);
+    Route::get('dashboard/expenses', [DashboardController::class, 'expenses']);
 
     // Options
     Route::get('options/{type}', OptionController::class);
