@@ -125,7 +125,7 @@ class BillService extends BaseCrudService
         return DateHelper::getFutureDate(
             currentDate : $bill->billing_date,
             count: $paidBillCount,
-            frequency: BillFrequencyEnum::from($bill->frequency)
+            frequency: BillFrequencyEnum::tryFrom($bill->frequency) ?? BillFrequencyEnum::ONCE
         );
     }
 
@@ -142,7 +142,7 @@ class BillService extends BaseCrudService
      */
     public static function isFinalPayment(BillsModel $bill, int $paymentsCount): bool
     {
-        $frequency = BillFrequencyEnum::from($bill->frequency);
+        $frequency = BillFrequencyEnum::tryFrom($bill->frequency) ?? BillFrequencyEnum::ONCE;
 
         if ($frequency === BillFrequencyEnum::ONCE) {
             return true;
