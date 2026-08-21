@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     libonig-dev \
     libxml2-dev \
+    libpq-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
         pdo_pgsql \
@@ -47,8 +48,7 @@ RUN chown -R www-data:www-data \
 # Nginx configuration
 COPY docker/nginx.conf /etc/nginx/sites-available/default
 
-# Render uses the PORT environment variable
 EXPOSE 10000
 
 # Start PHP-FPM and Nginx
-CMD sh -c "php-fpm -D && nginx -g 'daemon off;'"
+CMD ["sh", "-c", "php-fpm -D && nginx -g 'daemon off;'"]
