@@ -182,7 +182,7 @@ class TransactionService extends BaseCrudService
 
             DB::commit();
 
-            return $this->successMessage('Successfully log', $transactions);
+            return $this->successMessage('Successfully log', TransactionResource::collection($transactions));
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

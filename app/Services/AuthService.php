@@ -8,6 +8,8 @@ use App\Traits\ErrorMessageTrait;
 use App\Traits\SuccessMessageTrait;
 use App\Traits\UtilitiesTrait;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Hash;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 class AuthService
 {
@@ -22,11 +24,15 @@ class AuthService
         try {
             $user = User::where('email', $email)->first();
 
+            if (! $user || ! Hash::check($password, $user->password)) {
+                throw new UnauthorizedHttpException('', 'Invalid credentials.');
+            }
+
             $token = $user->createToken('user-auth')->plainTextToken;
 
             return response()->json(
                 $this->setReturnResponse(['user' => $user], 'Successfully Login')
-            )->withCookie(cookie('auth-token', $token, 60, '/', null, true, true,false,'None'));
+            )->withCookie(cookie('auth-token', $token, 60, '/', null, true, true, false, 'None'));
         } catch (\Throwable $th) {
             return $this->errorResponse($th, $th->getCode());
         }

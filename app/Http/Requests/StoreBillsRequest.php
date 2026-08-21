@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\BillCategoryEnum;
+use App\Enums\BillFrequencyEnum;
 use App\Enums\BillStatusEnum;
 use App\Enums\PaymentTypesEnum;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -35,7 +36,7 @@ class StoreBillsRequest extends BaseFormRequest
             'category' => ['required', new Enum(BillCategoryEnum::class)],
             'is_autopay' => ['boolean', 'sometimes'],
             'description' => ['nullable', 'string'],
-            'frequency' => ['required', 'in:monthly,yearly,daily,once'],
+            'frequency' => ['required', new Enum(BillFrequencyEnum::class)],
             'default_payment' => ['sometimes', new Enum(PaymentTypesEnum::class)],
         ];
     }
