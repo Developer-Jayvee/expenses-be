@@ -26,7 +26,7 @@ class AuthService
 
             return response()->json(
                 $this->setReturnResponse(['user' => $user], 'Successfully Login')
-            )->withCookie(cookie('auth-token', $token, 60, '/', null, false, true));
+            )->withCookie(cookie('auth-token', $token, 60, '/', null, true, true,false,'None'));
         } catch (\Throwable $th) {
             return $this->errorResponse($th, $th->getCode());
         }

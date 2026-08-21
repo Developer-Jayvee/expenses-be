@@ -24,12 +24,13 @@ class AuthMiddleware
             ], 401);
         }
 
-        if ($token) {
-            $accessToken = PersonalAccessToken::findToken($token);
-            if ($accessToken) {
-                Auth::setUser($accessToken->tokenable);
-            }
+        $accessToken = PersonalAccessToken::findToken($token);
+        if (! $accessToken) {
+            return response()->json([
+                'message' => 'Unauthenticated'
+            ], 401);
         }
+        Auth::setUser($accessToken->tokenable);
         return $next($request);
     }
 }
