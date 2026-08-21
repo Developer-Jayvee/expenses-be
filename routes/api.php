@@ -3,6 +3,7 @@
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BillsController;
+use App\Http\Controllers\ChecklistGroupsController;
 use App\Http\Controllers\DailyBudgetsController;
 use App\Http\Controllers\DailyExpensesController;
 use App\Http\Controllers\DashboardController;
@@ -51,6 +52,15 @@ Route::middleware(['auth.cookie'])->group(function () {
         Route::delete('{id}/delete', [DailyBudgetsController::class, 'destroy']);
         Route::post('{budget}/expenses', [DailyExpensesController::class, 'store']);
         Route::delete('expenses/{id}/delete', [DailyExpensesController::class, 'destroy']);
+    });
+
+    // Checklist Groups
+    Route::prefix('checklist-groups')->group(function () {
+        Route::get('/', [ChecklistGroupsController::class, 'index']);
+        Route::get('/{id}', [ChecklistGroupsController::class, 'show']);
+        Route::post('/', [ChecklistGroupsController::class, 'store']);
+        Route::put('/{id}', [ChecklistGroupsController::class, 'update']);
+        Route::delete('/{id}', [ChecklistGroupsController::class, 'destroy']);
     });
 
     // Dashboard
