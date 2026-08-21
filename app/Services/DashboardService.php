@@ -62,16 +62,16 @@ class DashboardService extends BaseCrudService
     {
         $transactionTotals = TransactionsModel::query()
             ->whereYear('transaction_date', $year)
-            ->selectRaw('MONTH(transaction_date) as month, SUM(amount) as total')
-            ->groupBy('month')
-            ->pluck('total', 'month');
+            ->get(['transaction_date', 'amount'])
+            ->groupBy(fn (TransactionsModel $row) => $row->transaction_date->month)
+            ->map(fn ($rows) => $rows->sum('amount'));
 
         $dailyExpenseTotals = DailyBudgetsModel::query()
             ->join('daily_expenses', 'daily_expenses.daily_budget_id', '=', 'daily_budgets.id')
             ->whereYear('daily_budgets.budget_date', $year)
-            ->selectRaw('MONTH(daily_budgets.budget_date) as month, SUM(daily_expenses.amount) as total')
-            ->groupBy('month')
-            ->pluck('total', 'month');
+            ->get(['daily_budgets.budget_date', 'daily_expenses.amount'])
+            ->groupBy(fn (DailyBudgetsModel $row) => $row->budget_date->month)
+            ->map(fn ($rows) => $rows->sum('amount'));
 
         return collect(range(1, 12))->map(fn (int $month) => [
             'month' => $month,
@@ -93,20 +93,20 @@ class DashboardService extends BaseCrudService
 
         $transactionTotals = TransactionsModel::query()
             ->where('transaction_date', '>=', $rangeStart)
-            ->selectRaw('YEARWEEK(transaction_date, 3) as yearweek, SUM(amount) as total')
-            ->groupBy('yearweek')
-            ->pluck('total', 'yearweek');
+            ->get(['transaction_date', 'amount'])
+            ->groupBy(fn (TransactionsModel $row) => $row->transaction_date->format('oW'))
+            ->map(fn ($rows) => $rows->sum('amount'));
 
         $dailyExpenseTotals = DailyBudgetsModel::query()
             ->join('daily_expenses', 'daily_expenses.daily_budget_id', '=', 'daily_budgets.id')
             ->where('daily_budgets.budget_date', '>=', $rangeStart)
-            ->selectRaw('YEARWEEK(daily_budgets.budget_date, 3) as yearweek, SUM(daily_expenses.amount) as total')
-            ->groupBy('yearweek')
-            ->pluck('total', 'yearweek');
+            ->get(['daily_budgets.budget_date', 'daily_expenses.amount'])
+            ->groupBy(fn (DailyBudgetsModel $row) => $row->budget_date->format('oW'))
+            ->map(fn ($rows) => $rows->sum('amount'));
 
         return collect(range(11, 0))->map(function (int $offset) use ($now, $transactionTotals, $dailyExpenseTotals) {
             $weekStart = $now->copy()->subWeeks($offset)->startOfWeek();
-            $yearweek = (int) $weekStart->format('oW');
+            $yearweek = $weekStart->format('oW');
 
             return [
                 'label' => $weekStart->format('M j'),
