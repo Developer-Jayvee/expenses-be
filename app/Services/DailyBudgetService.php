@@ -132,4 +132,43 @@ class DailyBudgetService extends BaseCrudService
 
         return $this->successMessage('Successfully cancelled.', new DailyBudgetResource($budget->fresh()));
     }
+
+    /**
+     * Continue an overdue (in-progress) session into today: clears its
+     * logged expenses and rolls its budget_date forward to today, keeping
+     * it active.
+     *
+     * @param  int  $id  [explicite description]
+     */
+    public function continueSession(int $id): JsonResponse
+    {
+        $budget = DailyBudgetsModel::query()->findOrFail($id);
+
+        if ($budget->status !== DailyBudgetStatusEnum::ACTIVE) {
+            throw new \Exception('Only an active transaction can be continued.', 422);
+        }
+
+        if (! $budget->is_overdue) {
+            throw new \Exception('Only an overdue transaction can be continued.', 422);
+        }
+
+        $budget->expenses()->delete();
+        $budget->budget_date = now()->toDateString();
+        $budget->save();
+
+        return $this->successMessage('Successfully continued.', new DailyBudgetResource($budget->fresh('expenses')));
+    }
+
+    /**
+     * Permanently delete a daily-budget session and its logged expenses.
+     *
+     * @param  int  $id  [explicite description]
+     */
+    public function deleteSession(int $id): JsonResponse
+    {
+        $budget = DailyBudgetsModel::query()->findOrFail($id);
+        $budget->delete();
+
+        return $this->successMessage('Successfully deleted.', null);
+    }
 }

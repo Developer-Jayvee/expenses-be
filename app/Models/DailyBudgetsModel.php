@@ -30,6 +30,7 @@ class DailyBudgetsModel extends Model
     protected $appends = [
         'total_spent',
         'remaining_budget',
+        'is_overdue',
     ];
 
     public function expenses(): HasMany
@@ -50,6 +51,19 @@ class DailyBudgetsModel extends Model
     {
         return Attribute::make(
             get: fn () => (float) $this->budget_amount - $this->total_spent
+        );
+    }
+
+    /**
+     * An active session left open past its own budget_date — the user
+     * never closed it out on the day it was started.
+     */
+    protected function isOverdue(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->status === DailyBudgetStatusEnum::ACTIVE
+                && $this->budget_date !== null
+                && $this->budget_date->toDateString() < now()->toDateString()
         );
     }
 }

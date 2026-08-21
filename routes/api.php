@@ -47,6 +47,8 @@ Route::middleware(['auth.cookie'])->group(function () {
         Route::get('{id}/details', [DailyBudgetsController::class, 'show']);
         Route::patch('{id}/done', [DailyBudgetsController::class, 'done']);
         Route::patch('{id}/cancel', [DailyBudgetsController::class, 'cancel']);
+        Route::patch('{id}/continue', [DailyBudgetsController::class, 'continueTransaction']);
+        Route::delete('{id}/delete', [DailyBudgetsController::class, 'destroy']);
         Route::post('{budget}/expenses', [DailyExpensesController::class, 'store']);
         Route::delete('expenses/{id}/delete', [DailyExpensesController::class, 'destroy']);
     });

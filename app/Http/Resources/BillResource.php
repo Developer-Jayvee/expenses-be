@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\BillStatusEnum;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -20,6 +21,9 @@ class BillResource extends JsonResource
             'amount' => $this->amount,
             'billing_date' => $this->billing_date ? $this->billing_date?->format('Y-m-d') : '',
             'end_date' => $this->end_date ? $this->end_date?->format('Y-m-d') : '',
+            'next_date_at' => $this->status === BillStatusEnum::COMPLETED
+                ? null
+                : $this->next_date_at?->format('Y-m-d'),
             'status' => $this->status,
 
             'category' => $this->category?->value,

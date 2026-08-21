@@ -20,6 +20,7 @@ class DailyBudgetResource extends JsonResource
             'budget_amount' => $this->budget_amount,
             'status' => $this->status?->value,
             'status_label' => $this->status?->label(),
+            'is_overdue' => $this->is_overdue,
             'budget_date' => $this->budget_date?->format('Y-m-d'),
             'total_spent' => $this->total_spent,
             'remaining_budget' => $this->remaining_budget,

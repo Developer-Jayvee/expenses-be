@@ -78,4 +78,22 @@ class DailyBudgetsController extends BaseCrudController
             return $this->errorResponse($th);
         }
     }
+
+    public function continueTransaction(int $id): JsonResponse
+    {
+        try {
+            return $this->dailyBudgetService->continueSession($id);
+        } catch (\Throwable $th) {
+            return $this->errorResponse($th);
+        }
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        try {
+            return $this->dailyBudgetService->deleteSession($id);
+        } catch (\Throwable $th) {
+            return $this->errorResponse($th);
+        }
+    }
 }

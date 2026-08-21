@@ -29,6 +29,7 @@ class StoreTransactionRequest extends BaseFormRequest
             'payment_mode' => ['required', new Enum(PaymentTypesEnum::class)],
             'notes' => ['nullable', 'string'],
             'amount' => ['required', 'integer'],
+            'periods' => ['nullable', 'integer', 'min:1', 'max:60'],
         ];
     }
 }

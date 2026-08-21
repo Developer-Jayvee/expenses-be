@@ -43,6 +43,7 @@ class TransactionController extends Controller
                     'notes' => $request->validated('notes'),
                     'payment_mode' => $request->validated('payment_mode'),
                     'amount' => $request->validated('amount'),
+                    'periods' => $request->validated('periods') ?? 1,
                 ]
             );
         } catch (\Exception $ex) {
